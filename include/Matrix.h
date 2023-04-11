@@ -33,6 +33,15 @@ public:
         }
     }
 
+    Matrix<T>(const Matrix &M) : m(M.m), n(M.n) {
+        arr = new T*[m];
+        for(int i=0; i<m; i++) {
+            arr[i] = new T[n];
+            for(int j=0; j<n; j++)
+                arr[i][j] = M.arr[i][j];
+        }
+    }
+
     ~Matrix<T>() {
         for(int i=0; i<m; i++)
             delete[] arr[i];
@@ -45,18 +54,45 @@ public:
         return arr[i][j];
     }
 
-    Matrix<T> operator+(const Matrix &M) {
-        if(n != M.n || m != M.m)
+    Matrix<T>& operator+=(const Matrix &M) {
+        if(this->n != M.n || this->m != M.m)
             throw std::invalid_argument("incompatible matrix sizes");
-        
-        Matrix<T> ret(m,n);
-        for(int i=0; i<m; i++)
-            for(int j=0; j<n; j++)
-                ret.arr[i][j] = arr[i][j] + M.arr[i][j];
 
-        return ret;
+        for(int i=0; i<this->m; i++)
+            for(int j=0; j<this->n; j++)
+                this->arr[i][j] += M.arr[i][j];
+
+        return *this;
     }
-    
+
+    friend Matrix<T> operator+(Matrix lhs, const Matrix &rhs) {
+        lhs += rhs;
+        return lhs;
+    }
+
+    Matrix<T>& operator-() {
+        for(int i=0; i<this->m; i++)
+            for(int j=0; j<this->n; j++)
+                this->arr[i][j] = -this->arr[i][j];
+        return *this;
+    }
+
+    Matrix<T>& operator-=(const Matrix &M) {
+        if(this->n != M.n || this->m != M.m)
+            throw std::invalid_argument("incompatible matrix sizes");
+
+        for(int i=0; i<this->m; i++)
+            for(int j=0; j<this->n; j++)
+                this->arr[i][j] -= M.arr[i][j];
+
+        return *this;
+    }
+
+    friend Matrix<T> operator-(Matrix lhs, const Matrix &rhs) {
+        lhs -= rhs;
+        return lhs;
+    }
+
     Matrix<T> operator*(const Matrix &M) {
         if(n != M.m)
             throw std::invalid_argument("incompatible matrix sizes");
@@ -76,7 +112,18 @@ public:
     template<typename U>
     friend std::ostream& operator<<(std::ostream& os, const Matrix<U> &M);
 
-private:
+    friend void swap(Matrix &a, Matrix &b) {
+        std::swap(a.m, b.m);
+        std::swap(a.n, b.n);
+        std::swap(a.arr, b.arr);
+    }
+
+    Matrix<T>& operator=(Matrix M) {
+        swap(*this,M);
+        return *this;
+    }
+
+protected:
     int m;
     int n;
     
