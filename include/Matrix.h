@@ -9,58 +9,62 @@
 template<class T>
 class Matrix {
 public:
-    Matrix<T>(int m, int n) : m(m), n(n) {
-        if(m <= 0 || n <= 0)
+
+    int M;
+    int N;
+
+    Matrix<T>(int M, int N) : M(M), N(N) {
+        if(M <= 0 || N <= 0)
             throw std::invalid_argument("invalid matrix size");
-        arr = new T*[m];
-        for(int i=0; i<m; i++) {
-            arr[i] = new T[n];
-            for(int j=0; j<n; j++)
+        arr = new T*[M];
+        for(int i=0; i<M; i++) {
+            arr[i] = new T[N];
+            for(int j=0; j<N; j++)
                 arr[i][j] = {};
         }
     }
 
     template<typename U>
     Matrix<T>(std::initializer_list<std::initializer_list<U>> list) {
-        m = (int)list.size();
-        n = (int)begin(list)->size();
+        M = (int)list.size();
+        N = (int)begin(list)->size();
 
-        arr = new T*[m];
-        for(int i=0; i<m; i++) {
-            arr[i] = new T[n];
-            for(int j=0; j<n; j++)
+        arr = new T*[M];
+        for(int i=0; i<M; i++) {
+            arr[i] = new T[N];
+            for(int j=0; j<N; j++)
                 arr[i][j] = ((begin(list)+i)->begin())[j];
         }
     }
 
-    Matrix<T>(const Matrix &M) : m(M.m), n(M.n) {
-        arr = new T*[m];
-        for(int i=0; i<m; i++) {
-            arr[i] = new T[n];
-            for(int j=0; j<n; j++)
-                arr[i][j] = M.arr[i][j];
+    Matrix<T>(const Matrix &rhs) : M(rhs.M), N(rhs.N) {
+        arr = new T*[rhs.M];
+        for(int i=0; i<rhs.M; i++) {
+            arr[i] = new T[rhs.N];
+            for(int j=0; j<rhs.N; j++)
+                arr[i][j] = rhs.arr[i][j];
         }
     }
 
     ~Matrix<T>() {
-        for(int i=0; i<m; i++)
+        for(int i=0; i<M; i++)
             delete[] arr[i];
         delete[] arr;
     }
     
     T& operator()(const int& i, const int& j) {
-        if(i < 0 || i > m || j < 0 || j > n)
+        if(i < 0 || i > M || j < 0 || j > N)
             throw std::invalid_argument("index out of range");
         return arr[i][j];
     }
 
-    Matrix<T>& operator+=(const Matrix &M) {
-        if(this->n != M.n || this->m != M.m)
+    Matrix<T>& operator+=(const Matrix &rhs) {
+        if(this->N != rhs.N || this->M != rhs.M)
             throw std::invalid_argument("incompatible matrix sizes");
 
-        for(int i=0; i<this->m; i++)
-            for(int j=0; j<this->n; j++)
-                this->arr[i][j] += M.arr[i][j];
+        for(int i=0; i<this->M; i++)
+            for(int j=0; j<this->N; j++)
+                this->arr[i][j] += rhs.arr[i][j];
 
         return *this;
     }
@@ -71,19 +75,19 @@ public:
     }
 
     Matrix<T>& operator-() {
-        for(int i=0; i<this->m; i++)
-            for(int j=0; j<this->n; j++)
+        for(int i=0; i<this->M; i++)
+            for(int j=0; j<this->N; j++)
                 this->arr[i][j] = -this->arr[i][j];
         return *this;
     }
 
-    Matrix<T>& operator-=(const Matrix &M) {
-        if(this->n != M.n || this->m != M.m)
+    Matrix<T>& operator-=(const Matrix &rhs) {
+        if(this->N != rhs.N || this->M != rhs.M)
             throw std::invalid_argument("incompatible matrix sizes");
 
-        for(int i=0; i<this->m; i++)
-            for(int j=0; j<this->n; j++)
-                this->arr[i][j] -= M.arr[i][j];
+        for(int i=0; i<this->M; i++)
+            for(int j=0; j<this->N; j++)
+                this->arr[i][j] -= rhs.arr[i][j];
 
         return *this;
     }
@@ -93,15 +97,15 @@ public:
         return lhs;
     }
 
-    Matrix<T> operator*(const Matrix &M) {
-        if(n != M.m)
+    Matrix<T> operator*(const Matrix &rhs) {
+        if(N != rhs.M)
             throw std::invalid_argument("incompatible matrix sizes");
 
-        Matrix<T> ret(m, M.n);
-        for(int i=0; i<m; i++)
-            for(int j=0; j<M.n; j++)
-                for(int k=0; k<n; k++)
-                    ret.arr[i][j] += arr[i][k] * M.arr[k][j];
+        Matrix<T> ret(M, rhs.N);
+        for(int i=0; i<M; i++)
+            for(int j=0; j<rhs.N; j++)
+                for(int k=0; k<N; k++)
+                    ret.arr[i][j] += arr[i][k] * rhs.arr[k][j];
 
         return ret;
     }
@@ -110,33 +114,51 @@ public:
     friend bool operator==(const Matrix<U> &a, const Matrix<U> &b);
 
     template<typename U>
-    friend std::ostream& operator<<(std::ostream& os, const Matrix<U> &M);
+    friend std::ostream& operator<<(std::ostream& os, const Matrix<U> &rhs);
 
     friend void swap(Matrix &a, Matrix &b) {
-        std::swap(a.m, b.m);
-        std::swap(a.n, b.n);
+        std::swap(a.M, b.M);
+        std::swap(a.N, b.N);
         std::swap(a.arr, b.arr);
     }
 
-    Matrix<T>& operator=(Matrix M) {
-        swap(*this,M);
+    Matrix<T>& operator=(Matrix rhs) {
+        swap(*this,rhs);
         return *this;
     }
 
+    void resize(int M, int N) {
+        T** temp = new T*[M];
+        for(int i=0; i<M; i++) {
+            temp[i] = new T[N];
+            for(int j=0; j<N; j++) {
+                if(i<this->M && j<this->N)
+                    temp[i][j] = this->arr[i][j];
+                else
+                    temp[i][j] = {};
+            }
+        }
+        for(int i=0; i<this->M; i++)
+            delete[] this->arr[i];
+        delete[] this->arr;
+
+        this->arr = temp;
+        this->M = M;
+        this->N = N;
+    }
+
 protected:
-    int m;
-    int n;
     
     T** arr;
 };
 
 template<typename U>
 bool operator==(const Matrix<U> &a, const Matrix<U> &b) {
-    bool ret = a.m == b.m && a.n == b.n;
+    bool ret = a.M == b.M && a.N == b.N;
     if(!ret) return ret;
 
-    for(int i=0; i<a.m; i++) {
-        for(int j=0; j<a.n; j++) {
+    for(int i=0; i<a.M; i++) {
+        for(int j=0; j<a.N; j++) {
             if(a.arr[i][j] != b.arr[i][j]) {
                 ret = false;
                 break;
@@ -149,18 +171,18 @@ bool operator==(const Matrix<U> &a, const Matrix<U> &b) {
 }
 
 template<typename T>
-std::ostream& operator<<(std::ostream &os, const Matrix<T> &M) {
-    os << "Matrix(" << M.m << ", " << M.n << "):\n";
-    for(int i=0; i<M.m; i++) {
+std::ostream& operator<<(std::ostream &os, const Matrix<T> &rhs) {
+    os << "Matrix(" << rhs.M << ", " << rhs.N << "):\n";
+    for(int i=0; i<rhs.M; i++) {
         os << "|";
-        for(int j=0; j<M.n; j++) {
+        for(int j=0; j<rhs.N; j++) {
             os << std::fixed << std::setprecision(2) << std::setw(4)
-               << M.arr[i][j];
-            if(j < M.n-1)
+               << rhs.arr[i][j];
+            if(j < rhs.N-1)
                 os << " ";
         }
         os << "|";
-        if(i < M.m-1)
+        if(i < rhs.M-1)
             os << "\n";
     }
     return os;

@@ -11,21 +11,26 @@ public:
     using Matrix<T>::Matrix;
     
     Matrix_Strassen<T> operator*(const Matrix_Strassen &M) {
-        if(this->n != M.m)
+        if(this->N != M.M)
             throw std::invalid_argument("incompatible matrix sizes");
 
-        int retM = this->m;
-        int retN = M.n;
+        int retM = this->M;
+        int retN = M.N;
         int maxDimension = std::max(retM, retN);
 
-        Matrix_Strassen<T> ret(this->m, M.n);
+        Matrix_Strassen<T> ret(maxDimension, maxDimension);
+
+        
 
         return ret;
     }
 
 private:
 
-    // Matrix_Strassen<T>
+    // Matrix_Strassen<T> mult_matrix(const Matrix_Strassen &lhs,
+    //         const Matrix_Strassen &rhs) {
+    //     
+    // }
 
 };
 
