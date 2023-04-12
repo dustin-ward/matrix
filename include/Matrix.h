@@ -52,10 +52,10 @@ public:
         delete[] arr;
     }
     
-    T& operator()(const int& i, const int& j) {
-        if(i < 0 || i > M || j < 0 || j > N)
+    T& operator()(int i, int j) {
+        if(i < 0 || i > this->M || j < 0 || j > this->N)
             throw std::invalid_argument("index out of range");
-        return arr[i][j];
+        return this->arr[i][j];
     }
 
     Matrix<T>& operator+=(const Matrix &rhs) {

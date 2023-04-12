@@ -61,6 +61,11 @@ TEST(BasicTests, Resize) {
     Matrix<int> B_expected = {{1,2},{4,5}};
     B.resize(2,2);
     EXPECT_EQ(B, B_expected);
+    
+    Matrix<int> C = {{1,2},{3,4},{5,6}};
+    Matrix<int> C_expected = {{1,2,0,0},{3,4,0,0},{5,6,0,0},{0,0,0,0}};
+    C.resize(4,4);
+    EXPECT_EQ(C, C_expected);
 }
 
 TEST(BasicTests, Negation) {
