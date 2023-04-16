@@ -110,6 +110,16 @@ TEST(BasicTests, MultiplicationInt) {
     EXPECT_THROW(A*D, std::invalid_argument);
 }
 
+TEST(BasicTests, Transpose) {
+    Matrix<int> A = {{1,2,3},{4,5,6},{7,8,9}};
+    Matrix<int> B = {{1,4,7},{2,5,8},{3,6,9}};
+    EXPECT_EQ(A.transpose(), B);
+
+    Matrix<int> C = {{1,2},{4,5},{7,8}};
+    Matrix<int> D = {{1,4,7},{2,5,8}};
+    EXPECT_EQ(C.transpose(), D);
+}
+
 TEST(BasicTests, BenchmarkMultiplication) {
     Matrix<double> A(1000,1000), B(1000,1000);
     uniform_real_distribution<double> unif(0,INT_MAX/2.0);

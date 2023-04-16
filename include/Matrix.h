@@ -97,15 +97,16 @@ public:
         return lhs;
     }
 
-    Matrix<T> operator*(const Matrix &rhs) {
+    Matrix<T> operator*(const Matrix &rhs) const {
         if(N != rhs.M)
             throw std::invalid_argument("incompatible matrix sizes");
 
+        Matrix<T> temp = rhs.transpose();
         Matrix<T> ret(M, rhs.N);
         for(int i=0; i<M; i++)
             for(int j=0; j<rhs.N; j++)
                 for(int k=0; k<N; k++)
-                    ret.arr[i][j] += arr[i][k] * rhs.arr[k][j];
+                    ret.arr[i][j] += arr[i][k] * temp.arr[j][k];
 
         return ret;
     }
@@ -147,6 +148,16 @@ public:
         this->N = N;
     }
 
+    Matrix<T> transpose() const {
+        Matrix<T> temp(this->N, this->M);
+
+        for(int i=0; i<this->M; i++)
+            for(int j=0; j<this->N; j++)
+                temp.arr[j][i] = this->arr[i][j];
+
+        return temp;
+    }
+
 protected:
     
     T** arr;
@@ -170,14 +181,14 @@ bool operator==(const Matrix<U> &a, const Matrix<U> &b) {
     return ret;
 }
 
-template<typename T>
-std::ostream& operator<<(std::ostream &os, const Matrix<T> &rhs) {
+template<typename U>
+std::ostream& operator<<(std::ostream& os, const Matrix<U> &rhs) {
     os << "Matrix(" << rhs.M << ", " << rhs.N << "):\n";
     for(int i=0; i<rhs.M; i++) {
         os << "|";
         for(int j=0; j<rhs.N; j++) {
             os << std::fixed << std::setprecision(2) << std::setw(4)
-               << rhs.arr[i][j];
+                << rhs.arr[i][j];
             if(j < rhs.N-1)
                 os << " ";
         }
